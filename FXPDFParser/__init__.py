@@ -50,7 +50,8 @@ class FxPdfParser():
         key2 = key + ' '
         key3 = key + '<'
         key4 = key + '['
-#        print(buf)
+        key4 = key + '\r'.encode('hex')
+##        print(buf.encode('hex'))
         pos = buf.find(key0)
         if pos == -1:
             pos = buf.find(key1)
@@ -283,9 +284,11 @@ class FxPdfParser():
             objNPos = self.fp.tell()
         
         self.fp.seek(objPos)
-        buf = self.fp.read(objNPos - objPos)
+        buf = self.fp.read(objNPos - objPos +1)
+##        print(buf)
         if objIndex == 0:
             roughEndPos = self._GetOneKeyPosRough(buf, 'endobj')
+            print(roughEndPos)
             endPos = self.FindKeyPos(self.fp, roughEndPos, 'endobj')
             self.fp.seek(0)
             objbuf = self.fp.read(endPos - 6)
@@ -316,6 +319,7 @@ class FxPdfParser():
         encodeTypeL = []
         TypeDefine = ['LZWDecode', 'ASCII85Decode', 'FlateDecode', \
                       'RunLengthDecode', 'DCTDecode']
+        print(ObjPos)
         buf = self.GetObjBuf(ObjPos)
 #        print(buf)
 #        print('**********************************************')
@@ -407,6 +411,7 @@ class FxPdfParser():
         num = 0
         firstcnt = 1
         second_pos = 0
+        print(pos)
         fp.seek(pos, os.SEEK_END)
         len_ = fp.tell()
 #        keys = ['stream', 'xref', 'startxref', '%%EOF', ' obj']

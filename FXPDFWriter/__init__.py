@@ -232,7 +232,8 @@ class FxPdfWriter():
                 if tem in ['\r', '\n', '<', '[']:
                     objPos = self.fp.tell() + 1
                     self.fp.seek(objPos, 0)
-                    objNum = self.fp.read(objPosTem - objPos)
+                    objNum = self.fp.read(objPosTem - objPos).strip()
+                    print(objNum)
                     spacePos = objNum.find(' ')
                     objNum = objNum[:spacePos]
                     objNum = string.atoi(objNum, 10)
@@ -290,7 +291,7 @@ class FxPdfWriter():
                 if tem in ['\r', '\n', '<', '[']:
                     objPos = self.fp.tell() + 1
                     self.fp.seek(objPos, 0)
-                    objNum = self.fp.read(objPosTem - objPos)
+                    objNum = self.fp.read(objPosTem - objPos).strip()
                     spacePos = objNum.find(' ')
                     objNum = objNum[:spacePos]
                     objNum = string.atoi(objNum, 10)

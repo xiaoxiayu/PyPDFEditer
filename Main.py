@@ -10,9 +10,14 @@ import threading
 from FXPDFParser import FxPdfParser
 from FXPDFWriter import FxPdfWriter
 from FXStreamCoder import StreamDecoder, StreamEncoder, LZWDecoder
-pdf = ''
+from PyPDF2 import PdfFileReader
+##pdf = PdfFileReader(open('E:/3bigpreview.pdf', 'rb'))
 
-from cStringIO import StringIO
+##from cStringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 #import chardet
 import re
 #sys.path.append('PDFEditerPageUI.py')
@@ -390,6 +395,7 @@ class MainWindow(QtGui.QMainWindow):
         self.objNumL = []
         self.objBufD = {}
         self.objStreamBufD = {}
+        self.pdf = None
         
         self.page_window = PageWindow()
 #        self.obj_window = ObjectWindow(None, self.objNameL)
@@ -425,9 +431,9 @@ class MainWindow(QtGui.QMainWindow):
         
     def PageInfoAction(self):
         self.page_window.ui.textBrowser.clear()        
-        page_num = pdf.getNumPages()
+        page_num = self.pdf.getNumPages()
         for i in range(0, page_num):
-            page = pdf.getPage(i)
+            page = self.pdf.getPage(i)
             page_info = str(page)
             print(i)
             print(page_info)
@@ -459,7 +465,7 @@ class MainWindow(QtGui.QMainWindow):
             self.ui.textEdit.append(buf)
         
     def namedDestinationAction(self):
-        name_des = pdf.getNamedDestinations()
+        name_des = self.pdf.getNamedDestinations()
         des_key_iter = name_des.iterkeys()
         for des_key in des_key_iter:
             print(des_key)
@@ -471,14 +477,14 @@ class MainWindow(QtGui.QMainWindow):
                 print(des_value.get(des_value_key))
                 des_page = des_value.get('/Page')
                 #print(des_page)
-                obj = pdf.getObject(des_page)
-                obj1 = pdf.getObject(generic.IndirectObject(2,0,pdf))
+                obj = self.pdf.getObject(des_page)
+                obj1 = self.pdf.getObject(generic.IndirectObject(2,0,self.pdf))
                 print(obj1)
 
 
             
     def outlinesAction(self):
-        outlines_list = pdf.getOutlines()
+        outlines_list = self.pdf.getOutlines()
         for outlines in outlines_list:
             print(outlines)
             outlines_key_iter = outlines.iterkeys()
@@ -489,7 +495,7 @@ class MainWindow(QtGui.QMainWindow):
     
     def DocInfoAction(self):
         #ten = PDFDocument.get_dest(des_key)
-        pdf_info = pdf.getDocumentInfo()
+        pdf_info = self.pdf.getDocumentInfo()
         if pdf_info == None:
             QtGui.QMessageBox.information(self, 'Document information', \
                                       'No info message!', QtGui.QMessageBox.Yes, QtGui.QMessageBox.Yes)
@@ -510,32 +516,32 @@ class MainWindow(QtGui.QMainWindow):
             pdf_info_author = 'none'
         else:
             pdf_info_author = pdf_info.author
-        if pdf_info.creationdate == None:
-            pdf_info_createdate = 'none'
-        else:
-            pdf_info_createdate = pdf_info.creationdate
-        if pdf_info.moddate == None:
-            pdf_info_moddate = 'none'
-        else:
-            pdf_info_moddate = pdf_info.moddate
+##        if pdf_info.creationdate == None:
+        pdf_info_createdate = 'none'
+##        else:
+##            pdf_info_createdate = pdf_info.creationdate
+##        if pdf_info.moddate == None:
+        pdf_info_moddate = 'none'
+##        else:
+##            pdf_info_moddate = pdf_info.moddate
             
-        xml_info = pdf.getXmpMetadata()
+        xml_info = self.pdf.getXmpMetadata()
         #tem=xml_info.xmp_createDate
-        if pdf.getXmpMetadata() == None:
+        if self.pdf.getXmpMetadata() == None:
             xml_info = 'none'
         
-        pdf_info_encryed = pdf.getIsEncrypted()
-        pdf_info_numpage = pdf.numPages
+        pdf_info_encryed = self.pdf.getIsEncrypted()
+        pdf_info_numpage = self.pdf.numPages
         doc_info = 'Title: ' + pdf_info_title + '\n'\
         + 'Creator: ' + pdf_info_creator + '\n'\
         + 'Producer: ' + pdf_info_producer + '\n'\
         + 'Author: ' + pdf_info_author + '\n'\
         + 'CreateDate: ' + pdf_info_createdate + '\n'\
-        + 'ModDate: ' + pdf_info.moddate + '\n'\
+        + 'ModDate: ' + pdf_info_moddate + '\n'\
         + 'PageNumber: ' + str(pdf_info_numpage)
         
             
-        print(pdf.getDocumentInfo())
+##        print(pdf.getDocumentInfo())
         QtGui.QMessageBox.information(self, 'Document information', \
                                       doc_info, QtGui.QMessageBox.Yes, QtGui.QMessageBox.Yes)
 
@@ -741,10 +747,10 @@ class MainWindow(QtGui.QMainWindow):
             
     def openAction(self):
         filename = QtGui.QFileDialog.getOpenFileName(self, 'Open')
-        print(filename)
         if not filename.isEmpty():
             self.ui.textEdit.clear()      
             fp = file(filename, 'rb')
+            self.pdf = PdfFileReader(fp)
             self.PDFParser = FxPdfParser(fp)
             XrefPosL = self.PDFParser.GetXrefContent()
             trailerPosL = self.PDFParser.GetTrailerPos()
